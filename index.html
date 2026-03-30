@@ -132,14 +132,85 @@
             outline: none;
         }
 
-        /* ══════════════════ 手机端适配补丁 (V2.3.1) ══════════════════ */
+        /* ══════════════════ 手机端适配 (V3.0) ══════════════════ */
         @media screen and (max-width: 768px) {
-            aside { display: none; }
-            .bubble { max-width: 92%; font-size: 1rem; }
+            /* 1. 强制纵向堆叠布局，防止水平挤压 */
+            body {
+                flex-direction: column;
+                height: 100dvh;
+                overflow: hidden;
+            }
+
+            /* 2. 彻底隐藏侧边栏 */
+            aside { display: none !important; }
+
+            /* 3. 主区域占满全部屏幕宽度和剩余高度 */
+            main {
+                width: 100%;
+                flex: 1;
+                min-width: 0;
+                overflow: hidden;
+            }
+
+            /* 4. 释放聊天宽度 */
+            .chat-container {
+                width: 100%;
+                padding: 12px 8px;
+                gap: 12px;
+                box-sizing: border-box;
+            }
+
+            /* 5. 修复气泡宽度，防止"面条"效果 */
+            .bubble {
+                max-width: 95%;
+                font-size: 1rem;
+                word-break: break-word;
+                overflow-wrap: break-word;
+                white-space: pre-wrap;
+            }
+
+            /* AI 气泡靠左展开，紧贴宽度上限 */
+            .bubble.ai {
+                width: fit-content;
+                max-width: 95%;
+            }
+
+            /* 用户气泡靠右 */
+            .bubble.user {
+                width: fit-content;
+                max-width: 95%;
+            }
+
+            /* 6. 输入区横跨全屏底端，Send:Input = 2:8 */
+            .input-area {
+                width: 100%;
+                padding: 10px 8px 20px;
+                gap: 8px;
+                box-sizing: border-box;
+                background: rgba(15, 17, 23, 0.95);
+            }
+
+            input {
+                flex: 8;
+                font-size: 16px; /* 防止 iOS 自动缩放 */
+                min-width: 0;
+            }
+
+            .input-area button.btn-confirm {
+                flex: 2;
+                min-width: 0;
+                padding: 12px 4px;
+                white-space: nowrap;
+            }
+
+            /* 7. Header 压缩 */
+            header {
+                padding: 12px 16px;
+            }
+
             header h1 { font-size: 1.1rem; }
+
             .export-btn-container { position: fixed; top: 15px; right: 15px; z-index: 200; }
-            input { font-size: 16px; } /* 防止iOS缩放 */
-            .input-area { padding-bottom: 30px; }
         }
 
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
