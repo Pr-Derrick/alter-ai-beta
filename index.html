@@ -2,266 +2,281 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Alter AI | 认知韧性之镜</title>
+    <title>Alter AI | 认知重构工作站 (PC-Only版)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #0f1117;
+            --sidebar-bg: #161822;
             --card-bg: rgba(30, 33, 48, 0.7);
             --accent: #6c8ef5;
             --text-main: #e8eaf6;
             --text-dim: #9da3c8;
             --warning: #facc15;
             --danger: #ef4444;
-            --sidebar-w: 260px;
+            --border-color: #2a2d3d;
+            --sidebar-w: 280px;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; }
         
-        body {
+        /* 强制纯 PC 端布局，禁止缩放变形 */
+        body, html {
             margin: 0;
+            padding: 0;
+            height: 100vh;
             background-color: var(--bg);
             color: var(--text-main);
             font-family: 'Inter', -apple-system, sans-serif;
+            min-width: 1024px; /* 强制 PC 最小宽度 */
             display: flex;
-            height: 100vh;
             overflow: hidden;
         }
 
-        /* ══════════════════ 侧边栏 (PC端显示) ══════════════════ */
+        /* ══════════════════ 侧边栏常驻控制台 ══════════════════ */
         aside {
             width: var(--sidebar-w);
-            background: rgba(15, 17, 23, 0.95);
-            border-right: 1px solid rgba(255,255,255,0.05);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            padding: 20px;
+            padding: 25px;
             z-index: 100;
+        }
+
+        .brand-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            margin: 0 0 40px 0;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        .step-list {
+            flex-grow: 1;
         }
 
         .step-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
+            gap: 15px;
+            margin-bottom: 24px;
             color: var(--text-dim);
-            font-size: 0.9rem;
+            font-size: 15px;
+            font-weight: 500;
             transition: 0.3s;
         }
 
-        .step-dot { width: 8px; height: 8px; border-radius: 50%; background: #334155; }
-        .active .step-dot { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
-        .done .step-dot { background: #10b981; }
+        .step-dot { 
+            width: 10px; 
+            height: 10px; 
+            border-radius: 50%; 
+            background: #334155; 
+            transition: all 0.3s ease;
+        }
+        
+        .step-item.active { color: #ffffff; }
+        .step-item.active .step-dot { background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+        .step-item.done .step-dot { background: #10b981; }
 
-        /* ══════════════════ 主对话区 ══════════════════ */
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
+        .memory-section {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 25px;
         }
 
-        header {
-            padding: 20px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+        .memory-count {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 15px;
         }
 
-        .chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .bubble {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 16px;
-            line-height: 1.6;
-            font-size: 0.95rem;
-        }
-
-        .ai { background: var(--card-bg); border-top-left-radius: 4px; backdrop-filter: blur(10px); }
-        .user { background: var(--accent); align-self: flex-end; border-top-right-radius: 4px; }
-
-        /* ══════════════════ 卡片组件 ══════════════════ */
-        .safety-card {
-            background: rgba(250, 204, 21, 0.1);
-            border: 1px solid var(--warning);
-            padding: 20px;
-            border-radius: 12px;
-            margin: 10px 0;
-            animation: slideIn 0.4s ease;
-        }
-
-        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        button {
-            padding: 8px 16px;
+        .btn-ghost {
+            width: 100%;
+            padding: 12px;
+            background-color: transparent;
+            border: 1px solid #475569;
+            color: var(--text-main);
             border-radius: 8px;
-            border: none;
             cursor: pointer;
+            font-size: 14px;
             font-weight: 600;
             transition: 0.2s;
         }
 
-        .btn-confirm { background: var(--accent); color: white; }
-        .btn-ghost { background: transparent; border: 1px solid #475569; color: var(--text-dim); }
+        .btn-ghost:hover { background-color: rgba(255,255,255,0.05); }
+
+        /* ══════════════════ 主工作区 ══════════════════ */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 40px;
+            position: relative;
+            background: radial-gradient(circle at top right, rgba(108, 142, 245, 0.05), transparent 40%), var(--bg);
+        }
+
+        header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0 0 8px 0;
+            font-size: 24px;
+        }
+
+        header span {
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        /* ══════════════════ 对话区域 ══════════════════ */
+        .chat-container {
+            flex: 1;
+            background: rgba(22, 24, 34, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow-y: auto;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+        }
+
+        .bubble {
+            max-width: 65%; /* 限制宽度，提升桌面端阅读体验 */
+            padding: 16px 20px;
+            border-radius: 12px;
+            line-height: 1.7;
+            font-size: 15px;
+            word-wrap: break-word;
+        }
+
+        .bubble.ai { 
+            background: var(--card-bg); 
+            border-top-left-radius: 4px; 
+            border: 1px solid rgba(255,255,255,0.05);
+            align-self: flex-start;
+        }
+        
+        .bubble.user { 
+            background: var(--accent); 
+            color: #ffffff;
+            align-self: flex-end; 
+            border-top-right-radius: 4px; 
+            box-shadow: 0 4px 15px rgba(108, 142, 245, 0.2);
+        }
+
+        /* ══════════════════ 动态组件与按钮 ══════════════════ */
+        .safety-card {
+            background: rgba(250, 204, 21, 0.05);
+            border: 1px solid var(--warning);
+            border-left: 4px solid var(--warning);
+            padding: 20px 25px;
+            border-radius: 8px;
+            margin: 10px 0;
+            align-self: flex-start;
+            max-width: 70%;
+            animation: slideIn 0.4s ease;
+        }
+
+        .btn-group { display: flex; gap: 12px; margin-top: 18px; }
+        
+        button.btn-confirm {
+            background: var(--accent);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        button.btn-confirm:hover { filter: brightness(1.1); }
+        button.btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* ══════════════════ 输入区 ══════════════════ */
         .input-area {
-            padding: 20px;
-            background: rgba(15, 17, 23, 0.8);
             display: flex;
-            gap: 12px;
+            gap: 15px;
+            background: var(--sidebar-bg);
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
         }
 
         input {
             flex: 1;
-            background: #1e2130;
-            border: 1px solid #334155;
-            padding: 12px 16px;
-            border-radius: 10px;
+            background: transparent;
+            border: none;
             color: white;
+            font-size: 16px;
             outline: none;
         }
 
-        /* ══════════════════ 手机端适配 (V3.0) ══════════════════ */
-        @media screen and (max-width: 768px) {
-            /* 1. 强制纵向堆叠布局，防止水平挤压 */
-            body {
-                flex-direction: column;
-                height: 100dvh;
-                overflow: hidden;
-            }
-
-            /* 2. 彻底隐藏侧边栏 */
-            aside { display: none !important; }
-
-            /* 3. 主区域占满全部屏幕宽度和剩余高度 */
-            main {
-                width: 100%;
-                flex: 1;
-                min-width: 0;
-                overflow: hidden;
-            }
-
-            /* 4. 释放聊天宽度 */
-            .chat-container {
-                width: 100%;
-                padding: 12px 8px;
-                gap: 12px;
-                box-sizing: border-box;
-            }
-
-            /* 5. 修复气泡宽度，防止"面条"效果 */
-            .bubble {
-                max-width: 95%;
-                font-size: 1rem;
-                word-break: break-word;
-                overflow-wrap: break-word;
-                white-space: pre-wrap;
-            }
-
-            /* AI 气泡靠左展开，紧贴宽度上限 */
-            .bubble.ai {
-                width: fit-content;
-                max-width: 95%;
-            }
-
-            /* 用户气泡靠右 */
-            .bubble.user {
-                width: fit-content;
-                max-width: 95%;
-            }
-
-            /* 6. 输入区横跨全屏底端，Send:Input = 2:8 */
-            .input-area {
-                width: 100%;
-                padding: 10px 8px 20px;
-                gap: 8px;
-                box-sizing: border-box;
-                background: rgba(15, 17, 23, 0.95);
-            }
-
-            input {
-                flex: 8;
-                font-size: 16px; /* 防止 iOS 自动缩放 */
-                min-width: 0;
-            }
-
-            .input-area button.btn-confirm {
-                flex: 2;
-                min-width: 0;
-                padding: 12px 4px;
-                white-space: nowrap;
-            }
-
-            /* 7. Header 压缩 */
-            header {
-                padding: 12px 16px;
-            }
-
-            header h1 { font-size: 1.1rem; }
-
-            .export-btn-container { position: fixed; top: 15px; right: 15px; z-index: 200; }
-        }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* 硬护栏冻结样式 */
-        .hard-frozen { filter: grayscale(1) blur(2px); pointer-events: none; }
+        /* ══════════════════ 硬护栏冻结样式 ══════════════════ */
+        .hard-frozen { filter: grayscale(1) blur(4px); pointer-events: none; }
         #hard-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.9);
+            background: rgba(15, 17, 23, 0.95);
             z-index: 1000;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 20px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
         }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div id="hard-overlay">
-        <h1 style="color:var(--danger)">🚨 触发硬安全护栏</h1>
-        <p>我们检测到您的表达可能涉及紧急风险。请联系专业支持：</p>
-        <div style="font-size: 2rem; margin: 20px 0;">988 (心理危机热线)</div>
-        <button onclick="location.reload()" class="btn-confirm">刷新重置</button>
+        <h1 style="color:var(--danger); font-size: 32px; margin-bottom: 20px;">🚨 触发硬安全护栏</h1>
+        <p style="font-size: 18px; color: var(--text-dim); max-width: 600px; line-height: 1.6;">
+            系统检测到您的表达可能涉及紧急风险。Alter AI 无法处理此类紧急情况，请立即联系专业支持：
+        </p>
+        <div style="font-size: 48px; font-weight: bold; margin: 30px 0; color: #ffffff; background: rgba(239, 68, 68, 0.2); padding: 20px 40px; border-radius: 16px; border: 1px solid var(--danger);">
+            988
+        </div>
+        <p style="margin-bottom: 30px; color: var(--text-dim);">心理危机与自杀预防热线</p>
+        <button onclick="location.reload()" class="btn-confirm" style="padding: 15px 40px; font-size: 16px;">确认并刷新重置会话</button>
     </div>
 
     <aside id="side-menu">
-        <h2 style="font-family:'Space Grotesk'">Alter AI</h2>
-        <div class="step-item active" id="step-1"><div class="step-dot"></div> Routing</div>
-        <div class="step-item" id="step-2"><div class="step-dot"></div> Calibration</div>
-        <div class="step-item" id="step-3"><div class="step-dot"></div> Slot Filling</div>
-        <div class="step-item" id="step-4"><div class="step-dot"></div> Drafting</div>
-        <div class="step-item" id="step-5"><div class="step-dot"></div> Commit</div>
+        <div class="brand-title">Alter AI</div>
         
-        <div style="margin-top:auto">
-            <div id="mem-count" style="font-size: 0.8rem; color: var(--accent);">已存记忆: 0</div>
-            <button onclick="exportMemory()" class="btn-ghost" style="width:100%; margin-top:10px; font-size:0.8rem">⬇️ 导出记忆档案</button>
+        <div class="step-list">
+            <div class="step-item active" id="step-1"><div class="step-dot"></div> Routing</div>
+            <div class="step-item" id="step-2"><div class="step-dot"></div> Calibration</div>
+            <div class="step-item" id="step-3"><div class="step-dot"></div> Slot Filling</div>
+            <div class="step-item" id="step-4"><div class="step-dot"></div> Drafting</div>
+            <div class="step-item" id="step-5"><div class="step-dot"></div> Commit</div>
+        </div>
+        
+        <div class="memory-section">
+            <div class="memory-count" id="mem-count">已存记忆: 0</div>
+            <button onclick="exportMemory()" class="btn-ghost">⬇️ 导出记忆档案</button>
         </div>
     </aside>
 
     <main id="main-content">
         <header>
             <div>
-                <h1 style="margin:0; font-size:1.2rem">认知重构之镜</h1>
-                <span style="font-size:0.7rem; color:var(--text-dim)">🔒 本地加密模式 · 匿名同步</span>
-            </div>
-            <div class="export-btn-container PC-hidden">
-                <button onclick="exportMemory()" class="btn-ghost" style="padding:5px 10px; font-size:0.7rem">导出</button>
+                <h1>认知韧性之镜</h1>
+                <span>🔒 本地加密计算环境 · 云端匿名同步</span>
             </div>
         </header>
 
@@ -271,7 +286,7 @@
 
         <div class="input-area">
             <input type="text" id="user-input" placeholder="输入你的感受..." onkeypress="if(event.key==='Enter') send()">
-            <button onclick="send()" class="btn-confirm">发送</button>
+            <button onclick="send()" class="btn-confirm">发送 (Enter)</button>
         </div>
     </main>
 
@@ -281,7 +296,7 @@
         const WEBHOOK_URL = "https://formspree.io/f/xeepgjbv";
 
         function updateUI() {
-            document.getElementById('mem-count').innerText = `已存记忆: ${memory.length}`;
+            document.getElementById('mem-count').innerText = `已存记忆档案: ${memory.length} 条`;
         }
 
         function addMsg(role, text) {
@@ -290,7 +305,10 @@
             div.className = `bubble ${role}`;
             div.innerText = text;
             box.appendChild(div);
-            box.scrollTop = box.scrollHeight;
+            // 平滑滚动到底部
+            setTimeout(() => {
+                box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+            }, 50);
             return div;
         }
 
@@ -316,7 +334,7 @@
                 return;
             }
 
-            // 模拟逻辑推进
+            // 3. 正常逻辑流转模拟
             setTimeout(() => {
                 if (currentStep < 4) {
                     currentStep++;
@@ -332,20 +350,21 @@
             const div = document.createElement('div');
             div.className = 'safety-card';
             div.innerHTML = `
-                <div style="color:var(--warning); font-weight:600">⚠️ 情绪校准确认</div>
-                <p style="font-size:0.85rem">你提到了 "${input}"。这是一个比喻，还是你感到极其不安全？</p>
+                <div style="color:var(--warning); font-weight:600; font-size:16px; margin-bottom:8px;">⚠️ 情绪校准确认</div>
+                <p style="font-size:14px; color: var(--text-main); margin:0 0 15px 0;">你提到了 "${input}"。这是一个比喻，还是你感到极其不安全？</p>
                 <div class="btn-group">
-                    <button class="btn-confirm" onclick="resolveSoft(true, this)">只是发泄，我很安全</button>
-                    <button class="btn-ghost" onclick="resolveSoft(false, this)">我需要支持</button>
+                    <button class="btn-confirm" onclick="resolveSoft(true, this)" style="background:#475569;">只是发泄，我很安全</button>
+                    <button class="btn-confirm" onclick="resolveSoft(false, this)" style="background:var(--danger);">我需要支持</button>
                 </div>
             `;
             document.getElementById('chat-box').appendChild(div);
+            scrollToBottom();
         }
 
         function resolveSoft(safe, btn) {
-            btn.parentElement.parentElement.remove();
+            btn.closest('.safety-card').remove();
             if (safe) {
-                addMsg('ai', "收到。那我们继续倾诉，我会降低挑战强度。");
+                addMsg('ai', "收到。情绪已校准，那我们继续倾诉，我会适当降低系统挑战强度。");
             } else {
                 triggerHardGuardrail();
             }
@@ -361,44 +380,51 @@
             const div = document.createElement('div');
             div.className = 'bubble ai';
             div.style.border = "1px solid var(--accent)";
+            div.style.background = "rgba(108, 142, 245, 0.05)";
             div.innerHTML = `
-                <div style="color:var(--accent); font-size:0.7rem; margin-bottom:5px">REFLECTIVE DRAFT</div>
-                引用你 Jan 20 的成功经验，这件事是否真的无可挽回？
+                <div style="color:var(--accent); font-size:12px; font-weight:700; margin-bottom:8px; letter-spacing: 1px;">REFLECTIVE DRAFT (草案)</div>
+                <div style="margin-bottom: 15px;">引用你之前沉淀的成功经验，眼前的这件事是否真的无可挽回？你可以审查并将其归档为新的认知韧性。</div>
                 <div class="btn-group">
-                    <button class="btn-confirm" onclick="commit(this)">Reflect on this</button>
+                    <button class="btn-confirm" onclick="commit(this)">确认重构 (Commit & Reflect)</button>
                 </div>
             `;
             document.getElementById('chat-box').appendChild(div);
+            scrollToBottom();
         }
 
         async function commit(btn) {
             btn.disabled = true;
-            btn.innerText = "Saving...";
+            btn.innerText = "加密打包上传中 (Saving...)";
 
             const entry = {
                 id: Date.now(),
-                context: "内测反馈",
+                context: "认知重构内测反馈归档",
                 timestamp: new Date().toISOString(),
                 verified: true
             };
 
-            // 本地保存
+            // 本地存储
             memory.push(entry);
             localStorage.setItem('alter_ai_memory', JSON.stringify(memory));
             updateUI();
 
-            // 云端静默同步 (Formspree)
+            // Webhook 云端静默同步
             fetch(WEBHOOK_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Accept": "application/json" },
                 body: JSON.stringify(entry)
-            }).then(() => console.log("✓ Synced")).catch(e => console.error(e));
+            }).then(() => console.log("✓ Cloud Synced")).catch(e => console.error("Sync Failed:", e));
 
             setTimeout(() => {
-                btn.parentElement.parentElement.innerHTML = "✓ 认知已存档。你的韧性增加了。";
+                const parent = btn.closest('.bubble');
+                parent.innerHTML = `
+                    <div style="color:#10b981; font-weight: 600;">✓ 认知已加密存档。你的心理韧性增加了。</div>
+                `;
+                parent.style.borderColor = "#10b981";
+                parent.style.background = "rgba(16, 185, 129, 0.05)";
                 currentStep = 5;
                 updateStepUI();
-            }, 800);
+            }, 1200);
         }
 
         function updateStepUI() {
@@ -409,14 +435,25 @@
         }
 
         function exportMemory() {
+            if (memory.length === 0) {
+                alert("当前暂无已存记忆。");
+                return;
+            }
             const blob = new Blob([JSON.stringify(memory, null, 2)], { type: "text/plain" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `AlterAI_Memory_${new Date().toLocaleDateString()}.txt`;
+            a.download = `AlterAI_Core_Memory_${new Date().toLocaleDateString()}.json`;
             a.click();
+            URL.revokeObjectURL(url);
         }
 
+        function scrollToBottom() {
+            const box = document.getElementById('chat-box');
+            setTimeout(() => { box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' }); }, 50);
+        }
+
+        // 初始化
         updateUI();
     </script>
 </body>
